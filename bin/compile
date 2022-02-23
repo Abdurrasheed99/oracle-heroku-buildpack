@@ -25,8 +25,9 @@ indent "Making directory #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}"
 
 indent "Downloading and extracting #{ORACLE_INSTANT_CLIENT_FILENAME}"
 # result = `curl #{ORACLE_INSTANT_CLIENT_URL} -L -s -o - | tar -xvz -C #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR} -f - `
-result = `wget #{ORACLE_INSTANT_CLIENT_URL}`
-result += `unzip #{ORACLE_INSTANT_CLIENT_FILENAME} -d #{BUILD_DIR}/vendor`
+result = `wget -q #{ORACLE_INSTANT_CLIENT_URL}`
+`cksum #{ORACLE_INSTANT_CLIENT_FILENAME}`
+`unzip #{ORACLE_INSTANT_CLIENT_FILENAME} -d #{BUILD_DIR}/vendor`
 `rm #{ORACLE_INSTANT_CLIENT_FILENAME}`
 
 unless $?.success?
