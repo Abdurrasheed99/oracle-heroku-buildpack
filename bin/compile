@@ -32,7 +32,8 @@ unless File.exists?(ORACLE_INSTANT_CLIENT_ARCHIVE)
   `cksum #{ORACLE_INSTANT_CLIENT_ARCHIVE}`
 end
 
-`unzip #{ORACLE_INSTANT_CLIENT_ARCHIVE} -d #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/lib`
+`unzip #{ORACLE_INSTANT_CLIENT_ARCHIVE} -d #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}`
+`mv #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}  #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/lib`
 
 unless $?.success?
   indent "Failure while downloading Oracle instant client archive: #{$?}"
