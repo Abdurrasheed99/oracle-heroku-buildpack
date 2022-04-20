@@ -17,7 +17,6 @@ puts "-----> Found an .oracle.yml"
 ORACLE_CONFIG = YAML.load_file("#{BUILD_DIR}/.oracle.yml")
 
 ORACLE_INSTANT_CLIENT_DIR="vendor/instantclient_21_5"
-# ORACLE_INSTANT_CLIENT_URL="https://www.dropbox.com/s/raw/om9k926llix2ln1/oracle-instantclient-full-12.1-linux.x64.tar.gz"
 ORACLE_INSTANT_CLIENT_URL="https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip"
 ORACLE_INSTANT_CLIENT_FILENAME=ORACLE_INSTANT_CLIENT_URL.split(/\//).last
 ORACLE_INSTANT_CLIENT_ARCHIVE=File.join(CACHE_DIR,ORACLE_INSTANT_CLIENT_FILENAME)
@@ -29,11 +28,12 @@ unless File.exists?(ORACLE_INSTANT_CLIENT_ARCHIVE)
   indent "Downloading and extracting #{ORACLE_INSTANT_CLIENT_FILENAME}"
 
   result = `wget -q #{ORACLE_INSTANT_CLIENT_URL} -O #{ORACLE_INSTANT_CLIENT_ARCHIVE}`
-  `cksum #{ORACLE_INSTANT_CLIENT_ARCHIVE}`
+  indent `cksum #{ORACLE_INSTANT_CLIENT_ARCHIVE}`
 end
 
-`unzip #{ORACLE_INSTANT_CLIENT_ARCHIVE} -d #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}`
-`mv #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/instantclient_21_5  #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/lib`
+`unzip #{ORACLE_INSTANT_CLIENT_ARCHIVE} -d #{BUILD_DIR}/vendor`
+# this is where the rust oracle lib expects the files
+indent `ln -s #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}  #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/lib`
 
 unless $?.success?
   indent "Failure while downloading Oracle instant client archive: #{$?}"
@@ -63,7 +63,7 @@ indent "Create profile.d script"
 open("#{BUILD_DIR}/.profile.d/oracle.sh", "w") do |f|
   ORACLE_HOME = "/app/#{ORACLE_INSTANT_CLIENT_DIR}"
   f.puts "export ORACLE_HOME=#{ORACLE_HOME}"
-  f.puts "export LD_LIBRARY_PATH=#{ORACLE_HOME}/lib:$LD_LIBRARY_PATH"
+  f.puts "export LD_LIBRARY_PATH=#{ORACLE_HOME}:$LD_LIBRARY_PATH"
   f.puts "export PATH=#{ORACLE_HOME}:$PATH"
   f.puts "export TNS_ADMIN=#{ORACLE_HOME}/network/admin"
 end
@@ -74,7 +74,7 @@ LD_LIBRARY_PATH_FILE = File.join(ENV_DIR, 'LD_LIBRARY_PATH')
 existing_ld_library_path = `cat #{LD_LIBRARY_PATH_FILE}`  if File.exists?(LD_LIBRARY_PATH_FILE)
 
 open(File.join(ENV_DIR,'LD_LIBRARY_PATH'), 'w') do |f|
-  value = "#{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/lib"
+  value = "#{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}"
   unless existing_ld_library_path.nil? || existing_ld_library_path.trim.empty?
     value += ":#{existing_ld_library_path}"
   end
