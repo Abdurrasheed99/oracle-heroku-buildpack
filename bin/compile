@@ -1,84 +1,47 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
 
-require 'yaml'
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
 
-$stdout.sync = true
+indent() {
+    echo "       $*" || true
+}
 
-def indent(msg)
-  puts "       #{msg}"
-end
+ORACLE_INSTANT_CLIENT_DIR=vendor/instantclient_21_5
+ORACLE_INSTANT_CLIENT_FILENAME=instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
+ORACLE_INSTANT_CLIENT_URL=https://download.oracle.com/otn_software/linux/instantclient/215000/$ORACLE_INSTANT_CLIENT_FILENAME
 
-BUILD_DIR=ARGV[0]
-CACHE_DIR=ARGV[1]
-ENV_DIR=ARGV[2]
+VENDOR_DIR=
+ORACLE_DIR=$VENDOR_DIR/oracle
+INSTANTCLIENT_DIR=$ORACLE_DIR/instantclient_12_1
+PROFILE_D_DIR=$
 
-puts "-----> Found an .oracle.yml"
+BASIC_FILENAME=instantclient-basic-linux.x64-12.1.0.2.0.zip
+SDK_FILENAME=instantclient-sdk-linux.x64-12.1.0.2.0.zip
 
-ORACLE_CONFIG = YAML.load_file("#{BUILD_DIR}/.oracle.yml")
+if [ ! -f $CACHE_DIR/$ORACLE_INSTANT_CLIENT_FILENAME ]; then
+    indent "Downloading $ORACLE_INSTANT_CLIENT_FILENAME..."
+    curl -# -o $CACHE_DIR/$ORACLE_INSTANT_CLIENT_FILENAME $ORACLE_INSTANT_CLIENT_URL
+fi
 
-ORACLE_INSTANT_CLIENT_DIR="vendor/instantclient_21_5"
-ORACLE_INSTANT_CLIENT_URL="https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip"
-ORACLE_INSTANT_CLIENT_FILENAME=ORACLE_INSTANT_CLIENT_URL.split(/\//).last
-ORACLE_INSTANT_CLIENT_ARCHIVE=File.join(CACHE_DIR,ORACLE_INSTANT_CLIENT_FILENAME)
+indent "Unzipping $ORACLE_INSTANT_CLIENT_FILENAME..."
+mkdir -p $BUILD_DIR/vendor
+unzip $CACHE_DIR/$ORACLE_INSTANT_CLIENT_FILENAME -d $BUILD_DIR/vendor
 
-indent "Making directory #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}"
-`mkdir -p #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}`
-
-unless File.exists?(ORACLE_INSTANT_CLIENT_ARCHIVE)
-  indent "Downloading and extracting #{ORACLE_INSTANT_CLIENT_FILENAME}"
-
-  result = `wget -q #{ORACLE_INSTANT_CLIENT_URL} -O #{ORACLE_INSTANT_CLIENT_ARCHIVE}`
-  indent `cksum #{ORACLE_INSTANT_CLIENT_ARCHIVE}`
-end
-
-`unzip #{ORACLE_INSTANT_CLIENT_ARCHIVE} -d #{BUILD_DIR}/vendor`
-# this is where the rust oracle lib expects the files
-indent `ln -s #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}  #{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/lib`
-
-unless $?.success?
-  indent "Failure while downloading Oracle instant client archive: #{$?}"
-  exit 1
-end
-
-indent "Successfully extracted #{ORACLE_INSTANT_CLIENT_FILENAME}"
-
-ORACLE_NETWORK_ADMIN_DIR = "#{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}/network/admin"
-`mkdir -p #{ORACLE_NETWORK_ADMIN_DIR}`
-
-TNSNAMES_FILENAME = ORACLE_CONFIG['tnsnames.ora']
-if File.exists?(File.join(BUILD_DIR,TNSNAMES_FILENAME))
-  indent "Symlinking #{TNSNAMES_FILENAME} to #{ORACLE_INSTANT_CLIENT_DIR}/network/admin/tnsnames.ora"
-  `ln -sf #{File.join('/app',TNSNAMES_FILENAME)} #{ORACLE_NETWORK_ADMIN_DIR}/tnsnames.ora`
-end
-
-SQLNET_FILENAME = ORACLE_CONFIG['sqlnet.ora']
-if File.exists?(File.join(BUILD_DIR,SQLNET_FILENAME))
-  indent "Symlinking #{SQLNET_FILENAME} to #{ORACLE_INSTANT_CLIENT_DIR}/network/admin/sqlnet.ora"
-  `ln -sf #{File.join('/app',SQLNET_FILENAME)} #{ORACLE_NETWORK_ADMIN_DIR}/sqlnet.ora`
-end
+indent "Linking $ORACLE_INSTANT_CLIENT_FILENAME..."
+ln -s $BUILD_DIR/$ORACLE_INSTANT_CLIENT_DIR  $BUILD_DIR/$ORACLE_INSTANT_CLIENT_DIR/lib
 
 indent "Create profile.d script"
-`mkdir -p #{BUILD_DIR}/.profile.d`
-
-open("#{BUILD_DIR}/.profile.d/oracle.sh", "w") do |f|
-  ORACLE_HOME = "/app/#{ORACLE_INSTANT_CLIENT_DIR}"
-  f.puts "export ORACLE_HOME=#{ORACLE_HOME}"
-  f.puts "export LD_LIBRARY_PATH=#{ORACLE_HOME}:$LD_LIBRARY_PATH"
-  f.puts "export PATH=#{ORACLE_HOME}:$PATH"
-  f.puts "export TNS_ADMIN=#{ORACLE_HOME}/network/admin"
-end
-
-indent "Save build LD_LIBRARY_PATH to ENV_DIR"
-
-LD_LIBRARY_PATH_FILE = File.join(ENV_DIR, 'LD_LIBRARY_PATH')
-existing_ld_library_path = `cat #{LD_LIBRARY_PATH_FILE}`  if File.exists?(LD_LIBRARY_PATH_FILE)
-
-open(File.join(ENV_DIR,'LD_LIBRARY_PATH'), 'w') do |f|
-  value = "#{BUILD_DIR}/#{ORACLE_INSTANT_CLIENT_DIR}"
-  unless existing_ld_library_path.nil? || existing_ld_library_path.trim.empty?
-    value += ":#{existing_ld_library_path}"
-  end
-  f.puts value
-end
+mkdir -p $BUILD_DIR/.profile.d
+cat << EOF > $BUILD_DIR/.profile.d/oracle.sh
+#!/usr/bin/env bash
+ORACLE_HOME = /app/vendor/instantclient_21_5
+export ORACLE_HOME=$ORACLE_HOME
+export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
+export PATH=$ORACLE_HOME:$PATH
+export TNS_ADMIN=$ORACLE_HOME/network/admin
+EOF
 
 indent "Done!"
