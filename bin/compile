@@ -37,8 +37,7 @@ indent "Create profile.d script"
 mkdir -p $BUILD_DIR/.profile.d
 cat << EOF > $BUILD_DIR/.profile.d/oracle.sh
 #!/usr/bin/env bash
-ORACLE_HOME = /app/vendor/instantclient_21_5
-export ORACLE_HOME=$ORACLE_HOME
+export ORACLE_HOME=/app/vendor/instantclient_21_5
 export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
 export PATH=$ORACLE_HOME:$PATH
 export TNS_ADMIN=$ORACLE_HOME/network/admin
