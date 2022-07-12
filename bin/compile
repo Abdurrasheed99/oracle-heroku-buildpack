@@ -13,11 +13,6 @@ ORACLE_INSTANT_CLIENT_DIR=vendor/instantclient_21_5
 ORACLE_INSTANT_CLIENT_FILENAME=instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
 ORACLE_INSTANT_CLIENT_URL=https://download.oracle.com/otn_software/linux/instantclient/215000/$ORACLE_INSTANT_CLIENT_FILENAME
 
-VENDOR_DIR=
-ORACLE_DIR=$VENDOR_DIR/oracle
-INSTANTCLIENT_DIR=$ORACLE_DIR/instantclient_12_1
-PROFILE_D_DIR=$
-
 BASIC_FILENAME=instantclient-basic-linux.x64-12.1.0.2.0.zip
 SDK_FILENAME=instantclient-sdk-linux.x64-12.1.0.2.0.zip
 
@@ -35,7 +30,7 @@ ln -s $BUILD_DIR/$ORACLE_INSTANT_CLIENT_DIR  $BUILD_DIR/$ORACLE_INSTANT_CLIENT_D
 
 indent "Create profile.d script"
 mkdir -p $BUILD_DIR/.profile.d
-cat << EOF > $BUILD_DIR/.profile.d/oracle.sh
+cat << EOF > $BUILD_DIR/.profile.d/010_oracle.sh
 #!/usr/bin/env bash
 export ORACLE_HOME=/app/vendor/instantclient_21_5
 export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
