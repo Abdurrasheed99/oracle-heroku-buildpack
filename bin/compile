@@ -9,7 +9,7 @@ indent() {
     echo "       $*" || true
 }
 
-ORACLE_INSTANT_CLIENT_DIR=vendor/instantclient_21_5
+ORACLE_INSTANT_CLIENT_DIR=vendor/instantclient_21_5/lib
 ORACLE_INSTANT_CLIENT_FILENAME=instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
 ORACLE_INSTANT_CLIENT_URL=https://download.oracle.com/otn_software/linux/instantclient/215000/$ORACLE_INSTANT_CLIENT_FILENAME
 
@@ -26,7 +26,7 @@ mkdir -p $BUILD_DIR/vendor
 unzip $CACHE_DIR/$ORACLE_INSTANT_CLIENT_FILENAME -d $BUILD_DIR/vendor
 
 indent "Linking $ORACLE_INSTANT_CLIENT_FILENAME..."
-ln -s $BUILD_DIR/$ORACLE_INSTANT_CLIENT_DIR  $BUILD_DIR/$ORACLE_INSTANT_CLIENT_DIR/
+# ln -s $BUILD_DIR/$ORACLE_INSTANT_CLIENT_DIR  $BUILD_DIR/$ORACLE_INSTANT_CLIENT_DIR/lib
 
 indent "Create profile.d script"
 mkdir -p $BUILD_DIR/.profile.d
