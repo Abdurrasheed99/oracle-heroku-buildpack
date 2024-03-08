@@ -36,7 +36,7 @@ indent "Create profile.d script"
 mkdir -p $BUILD_DIR/.profile.d
 cat << EOF > $BUILD_DIR/.profile.d/020_oracle.sh
 #!/usr/bin/env bash
-ln -s /app/$ORACLE_INSTANT_CLIENT_DIR  /app/$ORACLE_INSTANT_CLIENT_DIR/lib
+ln -vnfs /app/$ORACLE_INSTANT_CLIENT_DIR  /app/$ORACLE_INSTANT_CLIENT_DIR/lib
 export ORACLE_HOME=/app/vendor/instantclient_21_5
 export LD_LIBRARY_PATH="\$ORACLE_HOME:\$LD_LIBRARY_PATH"
 export PATH="\$ORACLE_HOME:\$PATH"
