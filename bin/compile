@@ -11,7 +11,7 @@ indent() {
     echo "       $*" || true
 }
 
-ORACLE_INSTANT_CLIENT_DIR=vendor/instantclient_21_5/lib
+ORACLE_INSTANT_CLIENT_DIR=vendor/instantclient_21_5
 ORACLE_INSTANT_CLIENT_FILENAME=instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
 ORACLE_INSTANT_CLIENT_URL=https://download.oracle.com/otn_software/linux/instantclient/215000/$ORACLE_INSTANT_CLIENT_FILENAME
 
