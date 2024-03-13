@@ -1,4 +1,4 @@
-# Heroku Buildpack for Ruby Oracle
+# Heroku Buildpack 
 
 Heroku buildpack for setting up Oracle Instant Client 
 
